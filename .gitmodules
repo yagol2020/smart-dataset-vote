@@ -1,0 +1,9 @@
+[submodule "ConFuzzius"]
+	path = ConFuzzius
+	url = https://github.com/christoftorres/ConFuzzius.git
+[submodule "mythril"]
+	path = mythril
+	url = https://github.com/ConsenSys/mythril.git
+[submodule "slither"]
+	path = slither
+	url = https://github.com/crytic/slither.git
