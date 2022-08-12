@@ -1,4 +1,5 @@
 import json
+import os
 from multiprocessing import Pool
 from subprocess import check_output
 from typing import List
@@ -38,10 +39,10 @@ def run_single(path) -> List[BugInfo]:
         for p, c in path_contracts:
             cmd = f"myth analyze --solv 0.4.25 --execution-timeout {1 * 2 * 60} {p}:{c} -o json"
             loguru.logger.debug(cmd)
-            output = json.loads(check_output(cmd, shell=True).decode("UTF-8"))
+            output = json.loads(os.popen(cmd).read())
             if output['success']:
                 for issue in output['issues']:
-                    ret.append(BugInfo(BugType(issue['title']), Tool("Mythril"), issue['lineno'], issue['description'], p, c))
+                    ret.append(BugInfo(BugType(issue['title']), issue['title'], Tool("Mythril"), issue['lineno'], issue['description'], p, c))
             else:
                 loguru.logger.error(f"Mythril failed(output) on {p}:{c}")
     except Exception as e:

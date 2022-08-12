@@ -40,6 +40,7 @@ def compile_sol(sol_path):
     try:
         CryticCompile(sol_path)
     except Exception as e:
+        loguru.logger.error(f"{sol_path} is not compiled, {e}")
         return False, sol_path
     return True, sol_path
 

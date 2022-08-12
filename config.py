@@ -1,4 +1,8 @@
+import os
 from enum import Enum
+
+THIS_FILE_DIR = os.path.dirname(os.path.abspath(__file__))
+CONFUZZIUS_MAIN_PY_PATH = os.path.join(THIS_FILE_DIR, "ConFuzzius", "fuzzer", "main.py")
 
 
 class BugTypeEnum(Enum):
@@ -15,15 +19,17 @@ def convert_to_enum(name):
         return BugTypeEnum.REENTRANCY
     elif name == "Integer Arithmetic Bugs":
         return BugTypeEnum.INTEGER_ARITHMETIC
-    elif name == "unchecked-transfer":
+    elif name == "unchecked-transfer" or name == "low-level-calls" or name == "Unchecked Return Value":
         return BugTypeEnum.UNCHECKED_CALL
     elif name == "State access after external call":
         return BugTypeEnum.REENTRANCY
     elif name == "reentrancy-no-eth":
         return BugTypeEnum.REENTRANCY
-    elif name == "timestamp":
+    elif name == "timestamp" or name == "Block Dependency":
         return BugTypeEnum.ENV_DEPENDENCY
     elif name == "reentrancy-benign":
+        return BugTypeEnum.REENTRANCY
+    elif name == "reentrancy-eth" or name == "Reentrancy":
         return BugTypeEnum.REENTRANCY
     return name
 
@@ -39,7 +45,7 @@ class Tool:
 
 
 class BugInfo:
-    def __init__(self, bug_type: BugType, tool: Tool, line_number: int, message: str, path: str, contract_name: str = "I_DONT_KNOW", function_name: str = "I_DONT_KNOW"):
+    def __init__(self, bug_type: BugType, origin_bug_type: str, tool: Tool, line_number: int, message: str, path: str, contract_name: str = "I_DONT_KNOW", function_name: str = "I_DONT_KNOW"):
         self.bug_type = bug_type
         self.tool = tool
         self.line_number = line_number[0] if isinstance(line_number, list) else line_number
@@ -47,6 +53,7 @@ class BugInfo:
         self.path = path
         self.contract_name = contract_name
         self.function_name = function_name
+        self.origin_bug_type = origin_bug_type
 
 
 class CsvReport:
@@ -57,6 +64,7 @@ class CsvReport:
         self.tool = None
         self.bug_line = None
         self.bug_type = None
+        self.origin_bug_type = None
         self.convert(bug_info)
 
     def convert(self, bug_info: BugInfo):
@@ -66,3 +74,4 @@ class CsvReport:
         self.bug_line = bug_info.line_number
         self.tool = bug_info.tool.name
         self.bug_type = bug_info.bug_type.name
+        self.origin_bug_type = bug_info.origin_bug_type
