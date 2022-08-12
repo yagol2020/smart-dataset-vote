@@ -3,6 +3,8 @@ from enum import Enum
 
 THIS_FILE_DIR = os.path.dirname(os.path.abspath(__file__))
 CONFUZZIUS_MAIN_PY_PATH = os.path.join(THIS_FILE_DIR, "ConFuzzius", "fuzzer", "main.py")
+MYTHRIL_ENV_PYTHON_BIN = os.path.join(THIS_FILE_DIR, "mythril", "ENV", "bin", "python")
+MYTHRIL_MYTH_PY_PATH = os.path.join(THIS_FILE_DIR, "mythril", "myth")
 
 
 class BugTypeEnum(Enum):

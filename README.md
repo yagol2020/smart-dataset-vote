@@ -20,8 +20,12 @@ python setup.py install
 
 ```shell
 cd mythril
+virtualenv ENV # mythril的环境与ConFuzzius冲突，所以需要创建一个新的环境
+source ENV/bin/activate
 python setup.py install
-
+pip install solc-select==0.2.0
+solc-select install 0.4.25
+solc-select use 0.4.25
 ```
 
 安装ConFuzzius
@@ -31,3 +35,5 @@ cd ConFuzzius/fuzzer
 pip install -r requirements.txt
 
 ```
+
+修改`ConFuzzius/fuzzer/utils/settings.py`文件中的`LOGGING_LEVEL = logging.ERROR`，避免日志输出过多

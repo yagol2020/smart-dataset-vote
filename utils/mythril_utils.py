@@ -8,7 +8,7 @@ import loguru
 from tqdm import tqdm
 import pandas as pd
 
-from config import BugInfo, CsvReport, BugType, Tool
+from config import BugInfo, CsvReport, BugType, Tool, MYTHRIL_ENV_PYTHON_BIN, MYTHRIL_MYTH_PY_PATH
 from utils.based_utils import extract_contracts
 
 
@@ -37,7 +37,7 @@ def run_single(path) -> List[BugInfo]:
     try:
         path_contracts = extract_contracts(path)
         for p, c in path_contracts:
-            cmd = f"myth analyze --solv 0.4.25 --execution-timeout {1 * 2 * 60} {p}:{c} -o json"
+            cmd = f"{MYTHRIL_ENV_PYTHON_BIN} {MYTHRIL_MYTH_PY_PATH} analyze --solv 0.4.25 --execution-timeout {1 * 2 * 60} {p}:{c} -o json"
             loguru.logger.debug(cmd)
             output = json.loads(os.popen(cmd).read())
             if output['success']:
