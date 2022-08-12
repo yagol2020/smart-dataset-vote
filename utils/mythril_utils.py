@@ -45,5 +45,5 @@ def run_single(path) -> List[BugInfo]:
             else:
                 loguru.logger.error(f"Mythril failed(output) on {p}:{c}")
     except Exception as e:
-        loguru.logger.error(f"Mythril failed on {path}")
+        loguru.logger.error(f"Mythril failed on {path}, {e}")
     return ret

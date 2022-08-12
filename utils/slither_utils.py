@@ -9,7 +9,7 @@ from slither.detectors import all_detectors
 from slither.detectors.abstract_detector import AbstractDetector, DetectorClassification
 from tqdm import tqdm
 
-from voter.config import BugInfo, Tool, BugType, CsvReport
+from config import BugInfo, Tool, BugType, CsvReport
 import pandas as pd
 
 
