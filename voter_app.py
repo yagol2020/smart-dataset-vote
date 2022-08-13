@@ -21,8 +21,8 @@ if __name__ == '__main__':
     res_dir = os.path.join(THIS_FILE_DIR, "results", str(time.time()))  # 绝对路径
     os.makedirs(res_dir)
     sols_paths = extract_sols(DATASET_DIR, 5000)
-    # slr = SlitherRunner(sols_paths, os.path.join(res_dir, "slither.csv"))
+    slr = SlitherRunner(sols_paths, os.path.join(res_dir, "slither.csv"))
     myr = MythrilRunner(sols_paths, os.path.join(res_dir, "mythril.csv"))
-    # cfr = ConFuzziusRunner(sols_paths, os.path.join(res_dir, "confuzzius.csv"))
-    # voter = Voter(os.path.join(res_dir, "slither.csv"), os.path.join(res_dir, "mythril.csv"), os.path.join(res_dir, "confuzzius.csv"), res_dir)
+    cfr = ConFuzziusRunner(sols_paths, os.path.join(res_dir, "confuzzius.csv"))
+    voter = Voter(os.path.join(res_dir, "slither.csv"), os.path.join(res_dir, "mythril.csv"), os.path.join(res_dir, "confuzzius.csv"), res_dir)
     loguru.logger.info("Done")

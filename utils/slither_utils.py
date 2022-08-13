@@ -49,7 +49,7 @@ def run_single(path) -> List[BugInfo]:
                 for l in r:
                     for e in l['elements']:
                         if e['type'] == 'node':
-                            bug_info = BugInfo(BugType(l['check']), l['check'], Tool("slither"), e['source_mapping']['lines'], l['description'], path)
+                            bug_info = BugInfo(BugType(l['check']), l['check'], Tool("slither"), e['source_mapping']['lines'], l['description'], path, sl=sl)
                             if e['type_specific_fields']['parent']['type'] == "function":
                                 bug_info.function_name = e['type_specific_fields']['parent']['name']
                                 if e['type_specific_fields']['parent']['type_specific_fields']['parent']['type'] == "contract":

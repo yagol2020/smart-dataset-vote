@@ -36,13 +36,13 @@ def run_single(path) -> List[BugInfo]:
     ret = []
     try:
         path_contracts = extract_contracts(path)
-        for p, c in path_contracts:
-            cmd = f"{MYTHRIL_ENV_PYTHON_BIN} {MYTHRIL_MYTH_PY_PATH} analyze --solv 0.4.25 --execution-timeout {1 * 2 * 60} {p}:{c} -o json"
+        for p, c, sl in path_contracts:
+            cmd = f"{MYTHRIL_ENV_PYTHON_BIN} {MYTHRIL_MYTH_PY_PATH} analyze --solv 0.4.25 --execution-timeout {1 * 5 * 60} {p}:{c} -o json"
             loguru.logger.debug(cmd)
             output = json.loads(os.popen(cmd).read())
             if output['success']:
                 for issue in output['issues']:
-                    ret.append(BugInfo(BugType(issue['title']), issue['title'], Tool("Mythril"), issue['lineno'], issue['description'], p, c))
+                    ret.append(BugInfo(BugType(issue['title']), issue['title'], Tool("Mythril"), issue['lineno'], issue['description'], p, contract_name=c, sl=sl))
             else:
                 loguru.logger.error(f"Mythril failed(output) on {p}:{c}")
     except Exception as e:

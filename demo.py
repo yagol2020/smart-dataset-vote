@@ -1,3 +1,7 @@
 import os
 
-os.popen("/bin/bash -c source /home/yy/PycharmProjects/smart-ast-deeper/smart-dataset-vote/mythril/ENV/bin/activate;myth analyze --solv 0.4.25 --execution-timeout 120 /home/yy/PycharmProjects/smart-ast-deeper/smart-dataset-vote/dataset/E.sol:MY_BANK -o json").read()
+from utils.vote_utils import Voter
+
+res_dir = "/home/yy/PycharmProjects/smart-ast-deeper/smart-dataset-vote/results/1660352486.162336"
+
+voter = Voter(os.path.join(res_dir, "slither.csv"), os.path.join(res_dir, "mythril.csv"), os.path.join(res_dir, "confuzzius.csv"), res_dir)

@@ -1,6 +1,8 @@
 import os
 from enum import Enum
 
+from slither import Slither
+
 THIS_FILE_DIR = os.path.dirname(os.path.abspath(__file__))
 CONFUZZIUS_MAIN_PY_PATH = os.path.join(THIS_FILE_DIR, "ConFuzzius", "fuzzer", "main.py")
 MYTHRIL_ENV_PYTHON_BIN = os.path.join(THIS_FILE_DIR, "mythril", "ENV", "bin", "python")
@@ -47,7 +49,7 @@ class Tool:
 
 
 class BugInfo:
-    def __init__(self, bug_type: BugType, origin_bug_type: str, tool: Tool, line_number: int, message: str, path: str, contract_name: str = "I_DONT_KNOW", function_name: str = "I_DONT_KNOW"):
+    def __init__(self, bug_type: BugType, origin_bug_type: str, tool: Tool, line_number: int, message: str, path: str, contract_name: str = "I_DONT_KNOW", function_name: str = "I_DONT_KNOW", sl: Slither = None):
         self.bug_type = bug_type
         self.tool = tool
         self.line_number = line_number[0] if isinstance(line_number, list) else line_number
@@ -56,6 +58,19 @@ class BugInfo:
         self.contract_name = contract_name
         self.function_name = function_name
         self.origin_bug_type = origin_bug_type
+        self.sl = sl
+        self.update_info()
+
+    def update_info(self):
+        if self.contract_name == "I_DONT_KNOW" or self.function_name == "I_DONT_KNOW":
+            if self.sl is None:
+                self.sl = Slither(self.path)
+            for c in self.sl.contracts:
+                for f in c.functions:
+                    if self.line_number in f.source_mapping['lines']:
+                        self.contract_name = c.name
+                        self.function_name = f.name
+                        break
 
 
 class CsvReport:

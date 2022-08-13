@@ -40,11 +40,11 @@ def run_single(path) -> List[BugInfo]:
     ret = []
     try:
         path_contracts = extract_contracts(path)
-        for p, c in path_contracts:
+        for p, c, sl in path_contracts:
             if os.path.exists("/tmp/confuzzius_result.json"):
                 loguru.logger.debug("Remove /tmp/confuzzius_result.json")
                 os.remove("/tmp/confuzzius_result.json")
-            cmd = f"python {CONFUZZIUS_MAIN_PY_PATH} -s {p} -c {c} --solc v0.4.25 --evm byzantium -g 20 --result /tmp/confuzzius_result.json"
+            cmd = f"python {CONFUZZIUS_MAIN_PY_PATH} -s {p} -c {c} --solc v0.4.25 --evm byzantium -g 50 --result /tmp/confuzzius_result.json"
             loguru.logger.debug(cmd)
             os.popen(cmd).read()
             if not os.path.exists("/tmp/confuzzius_result.json"):
@@ -55,7 +55,7 @@ def run_single(path) -> List[BugInfo]:
                 errors = output[c]['errors']
                 for swc_id, error in errors.items():
                     for e in error:
-                        ret.append(BugInfo(BugType(e['type']), e['type'], Tool("ConFuzzius"), e['line'], e['type'], p, c))
+                        ret.append(BugInfo(BugType(e['type']), e['type'], Tool("ConFuzzius"), e['line'], e['type'], p, contract_name=c, sl=sl))
             else:
                 loguru.logger.error(f"ConFuzzius failed(output) on {p}:{c}")
     except Exception as e:

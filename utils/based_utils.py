@@ -6,6 +6,7 @@ from typing import List, Tuple
 
 import loguru
 from crytic_compile import CryticCompile
+from slither import Slither
 from tqdm import tqdm
 
 
@@ -45,9 +46,10 @@ def compile_sol(sol_path):
     return True, sol_path
 
 
-def extract_contracts(sol_path: str) -> List[Tuple[str, str]]:
+def extract_contracts(sol_path: str) -> List[Tuple[str, str, Slither]]:
     ret = []
-    cy = CryticCompile(sol_path)
+    sl = Slither(sol_path)
+    cy = sl.crytic_compile
     for i in cy.compilation_units[sol_path].contracts_names_without_libraries:
-        ret.append((sol_path, i))
+        ret.append((sol_path, i, sl))
     return ret

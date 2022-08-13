@@ -22,6 +22,7 @@ python setup.py install
 cd mythril
 virtualenv ENV # mythril的环境与ConFuzzius冲突，所以需要创建一个新的环境
 source ENV/bin/activate
+pip install -r requirements.txt
 python setup.py install
 pip install solc-select==0.2.0
 solc-select install 0.4.25
