@@ -54,7 +54,10 @@ def extract_sols(source_path, sample):
 
 def compile_sol(sol_path):
     try:
-        Slither(sol_path)
+        sl = Slither(sol_path)
+        for c in sl.contracts:
+            for f in c.functions:
+                lines = f.source_mapping['lines']
         open(sol_path, 'r').read()
     except Exception as e:
         exception_info_str = str(e).split("\n")[0]

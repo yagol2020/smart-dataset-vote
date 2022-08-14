@@ -1,4 +1,5 @@
 import inspect
+import json
 import os
 from multiprocessing import Pool
 from typing import List
@@ -27,8 +28,10 @@ class SlitherRunner:
             pool = Pool()
             for ret in tqdm(pool.imap_unordered(run_single, self.paths), total=len(self.paths), desc="Running slither"):
                 self.bug_reports.extend(ret)
+            pool.close()
+            pool.join()
         except Exception as e:
-            loguru.logger.error(f"执行Slither多进程任务失败，请检查错误信息: {e}")
+            loguru.logger.critical(f"执行Slither多进程任务失败，请检查错误信息: {e}")
 
     def report_to_csv(self):
         res = [CsvReport(r).__dict__ for r in self.bug_reports]
@@ -39,25 +42,25 @@ class SlitherRunner:
 def run_single(path) -> List[BugInfo]:
     ret = []
     try:
-        sl = Slither(path)
-        loguru.logger.debug(f"Running slither on {path}")
-        detectors = [getattr(all_detectors, name) for name in dir(all_detectors)]
-        detectors = [d for d in detectors if inspect.isclass(d) and issubclass(d, AbstractDetector)]
-        for detector in detectors:
-            if detector.IMPACT != DetectorClassification.INFORMATIONAL or detector.IMPACT != DetectorClassification.OPTIMIZATION:
-                sl.register_detector(detector)
-        res = sl.run_detectors()
-        for r in res:
-            if len(r) > 0:
-                for l in r:
+        if os.path.exists(f"/tmp/slither_res_{os.getpid()}.json"):
+            os.remove(f"/tmp/slither_res_{os.getpid()}.json")
+        os.popen(f"slither {path} --json /tmp/slither_res_{os.getpid()}.json").read()
+        if not os.path.exists("/tmp/slither_res.json"):
+            loguru.logger.error("/tmp/slither_res.json文件不存在，请检查slither是否正常运行")
+        else:
+            res = json.load(open(f"/tmp/slither_res_{os.getpid()}.json"))
+            if res['success']:
+                for l in res['results']['detectors']:
                     for e in l['elements']:
                         if e['type'] == 'node':
-                            bug_info = BugInfo(BugType(l['check']), l['check'], Tool("slither"), e['source_mapping']['lines'], l['description'], path, sl=sl)
+                            bug_info = BugInfo(BugType(l['check']), l['check'], Tool("slither"), e['source_mapping']['lines'], l['description'], path)
                             if e['type_specific_fields']['parent']['type'] == "function":
                                 bug_info.function_name = e['type_specific_fields']['parent']['name']
                                 if e['type_specific_fields']['parent']['type_specific_fields']['parent']['type'] == "contract":
                                     bug_info.contract_name = e['type_specific_fields']['parent']['type_specific_fields']['parent']['name']
                             ret.append(bug_info)
+            else:
+                loguru.logger.error("slither执行失败，请检查错误信息")
     except Exception as e:
         loguru.logger.error(f"Error running slither on {path}, {e}")
     return ret

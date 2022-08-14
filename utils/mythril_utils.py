@@ -22,9 +22,14 @@ class MythrilRunner:
 
     @loguru.logger.catch()
     def run(self):
-        pool = Pool()
-        for ret in tqdm(pool.imap_unordered(run_single, self.paths), total=len(self.paths), desc="Running Mythril"):
-            self.bug_reports.extend(ret)
+        try:
+            pool = Pool()
+            for ret in tqdm(pool.imap_unordered(run_single, self.paths), total=len(self.paths), desc="Running Mythril"):
+                self.bug_reports.extend(ret)
+            pool.close()
+            pool.join()
+        except Exception as e:
+            loguru.logger.critical(f"执行Mythril多进程任务失败，请检查错误信息: {e}")
 
     def report_to_csv(self):
         res = [CsvReport(r).__dict__ for r in self.bug_reports]
@@ -42,7 +47,8 @@ def run_single(path) -> List[BugInfo]:
             output = json.loads(os.popen(cmd).read())
             if output['success']:
                 for issue in output['issues']:
-                    ret.append(BugInfo(BugType(issue['title']), issue['title'], Tool("Mythril"), issue['lineno'], issue['description'], p, contract_name=c, sl=sl))
+                    bug_info = BugInfo(BugType(issue['title']), issue['title'], Tool("Mythril"), issue['lineno'], issue['description'], p, contract_name=c, sl=sl)
+                    ret.append(bug_info)
             else:
                 loguru.logger.error(f"Mythril failed(output) on {p}:{c}")
     except Exception as e:

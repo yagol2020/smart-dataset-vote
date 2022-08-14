@@ -33,7 +33,7 @@ def convert_to_enum(name):
         return BugTypeEnum.ENV_DEPENDENCY
     elif name == "reentrancy-benign":
         return BugTypeEnum.REENTRANCY
-    elif name == "reentrancy-eth" or name == "Reentrancy":
+    elif name == "reentrancy-eth" or name == "Reentrancy" or name == "reentrancy-unlimited-gas":
         return BugTypeEnum.REENTRANCY
     return name
 
@@ -59,7 +59,6 @@ class BugInfo:
         self.function_name = function_name
         self.origin_bug_type = origin_bug_type
         self.sl = sl
-        self.update_info()
 
     def update_info(self):
         if self.contract_name == "I_DONT_KNOW" or self.function_name == "I_DONT_KNOW":

@@ -2,6 +2,10 @@ import os
 
 from utils.vote_utils import Voter
 
-res_dir = "/home/yy/PycharmProjects/smart-ast-deeper/smart-dataset-vote/results/1660352486.162336"
+res_dir = "/home/yy/PycharmProjects/smart-ast-deeper/smart-dataset-vote/results/1660470986.719603"
 
-voter = Voter(os.path.join(res_dir, "slither.csv"), os.path.join(res_dir, "mythril.csv"), os.path.join(res_dir, "confuzzius.csv"), res_dir)
+voter = Voter(res_dir)
+voter.put_voter_csv(csv_path="/home/yy/PycharmProjects/smart-ast-deeper/smart-dataset-vote/results/1660470986.719603/slither.csv", voter_name="slither")
+voter.put_voter_csv(csv_path="/home/yy/PycharmProjects/smart-ast-deeper/smart-dataset-vote/results/1660470986.719603/confuzzius.csv", voter_name="confuzzius")
+voter.put_voter_csv(csv_path="/home/yy/PycharmProjects/smart-ast-deeper/smart-dataset-vote/results/1660470986.719603/mythril.csv", voter_name="mythril")
+voter.run()

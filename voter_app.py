@@ -10,13 +10,14 @@ from utils.slither_utils import SlitherRunner
 from utils.vote_utils import Voter
 
 THIS_FILE_DIR = os.path.dirname(os.path.abspath(__file__))
-# DATASET_DIR = os.path.join(THIS_FILE_DIR, "dataset") # 如果你的源代码数据集不在这里，请自行更改
+# DATASET_DIR = os.path.join(THIS_FILE_DIR, "dataset")  # 如果你的源代码数据集不在这里，请自行更改
 DATASET_DIR = "/home/yy/Dataset/smart-contract-sanctuary-ethereum/contracts/mainnet"
 loguru.logger.remove()  # 移除标准输出log
-loguru.logger.add("./logs/INFO.log", level="INFO", mode="w")
-loguru.logger.add("./logs/ERROR.log", level="ERROR", mode="w")
-loguru.logger.add("./logs/WARNING.log", level="WARNING", mode="w")
-loguru.logger.add("./logs/DEBUG.log", level="DEBUG", mode="w")
+loguru.logger.add("./logs/INFO.log", level="INFO", mode="w", format="{time} | {level} | {process} | {thread} | {message}")
+loguru.logger.add("./logs/ERROR.log", level="ERROR", mode="w", format="{time} | {level} | {process} | {thread} | {message}")
+loguru.logger.add("./logs/WARNING.log", level="WARNING", mode="w", format="{time} | {level} | {process} | {thread} | {message}")
+loguru.logger.add("./logs/DEBUG.log", level="DEBUG", mode="w", format="{time} | {level} | {process} | {thread} | {message}")
+loguru.logger.add("./logs/CRITICAL.log", level="CRITICAL", mode="w", format="{time} | {level} | {process} | {thread} | {message}")
 
 if __name__ == '__main__':
     res_dir = os.path.join(THIS_FILE_DIR, "results", str(time.time()))  # 绝对路径
@@ -29,4 +30,4 @@ if __name__ == '__main__':
     voter.put_voter_csv(csv_path=os.path.join(res_dir, "slither.csv"), voter_name="slither")
     voter.put_voter_csv(csv_path=os.path.join(res_dir, "confuzzius.csv"), voter_name="confuzzius")
     voter.run()
-    loguru.logger.info("Done")
+    loguru.logger.info(f"Done: {len(sols_paths)}")

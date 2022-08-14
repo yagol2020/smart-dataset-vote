@@ -26,9 +26,14 @@ class ConFuzziusRunner:
 
     @loguru.logger.catch()
     def run(self):
-        pool = Pool()
-        for ret in tqdm(pool.imap_unordered(run_single, self.paths), total=len(self.paths), desc="Running ConFuzzius"):
-            self.bug_reports.extend(ret)
+        try:
+            pool = Pool()
+            for ret in tqdm(pool.imap_unordered(run_single, self.paths), total=len(self.paths), desc="Running ConFuzzius"):
+                self.bug_reports.extend(ret)
+            pool.close()
+            pool.join()
+        except Exception as e:
+            loguru.logger.critical(f"执行ConFuzzius多进程任务失败，请检查错误信息: {e}")
 
     def report_to_csv(self):
         res = [CsvReport(r).__dict__ for r in self.bug_reports]
@@ -41,21 +46,22 @@ def run_single(path) -> List[BugInfo]:
     try:
         path_contracts = extract_contracts(path)
         for p, c, sl in path_contracts:
-            if os.path.exists("/tmp/confuzzius_result.json"):
-                loguru.logger.debug("Remove /tmp/confuzzius_result.json")
-                os.remove("/tmp/confuzzius_result.json")
-            cmd = f"python {CONFUZZIUS_MAIN_PY_PATH} -s {p} -c {c} --solc v0.4.25 --evm byzantium -g 50 --result /tmp/confuzzius_result.json"
+            if os.path.exists(f"/tmp/confuzzius_result_{os.getpid()}.json"):
+                loguru.logger.debug(f"Remove /tmp/confuzzius_result_{os.getpid()}.json")
+                os.remove(f"/tmp/confuzzius_result_{os.getpid()}.json")
+            cmd = f"python {CONFUZZIUS_MAIN_PY_PATH} -s {p} -c {c} --solc v0.4.25 --evm byzantium -g 50 --result /tmp/confuzzius_result_{os.getpid()}.json"
             loguru.logger.debug(cmd)
             os.popen(cmd).read()
-            if not os.path.exists("/tmp/confuzzius_result.json"):
+            if not os.path.exists(f"/tmp/confuzzius_result_{os.getpid()}.json"):
                 loguru.logger.error(f"ConFuzzius: {p} {c} has no result")
                 continue
-            output = json.load(open("/tmp/confuzzius_result.json"))
+            output = json.load(open(f"/tmp/confuzzius_result_{os.getpid()}.json"))
             if c in output.keys():
                 errors = output[c]['errors']
                 for swc_id, error in errors.items():
                     for e in error:
-                        ret.append(BugInfo(BugType(e['type']), e['type'], Tool("ConFuzzius"), e['line'], e['type'], p, contract_name=c, sl=sl))
+                        bug_info = BugInfo(BugType(e['type']), e['type'], Tool("ConFuzzius"), e['line'], e['type'], p, contract_name=c, sl=sl)
+                        ret.append(bug_info)
             else:
                 loguru.logger.error(f"ConFuzzius failed(output) on {p}:{c}")
     except Exception as e:
