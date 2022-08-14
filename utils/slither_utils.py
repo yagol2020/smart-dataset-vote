@@ -23,9 +23,12 @@ class SlitherRunner:
 
     @loguru.logger.catch()
     def run(self):
-        pool = Pool()
-        for ret in tqdm(pool.imap_unordered(run_single, self.paths), total=len(self.paths), desc="Running slither"):
-            self.bug_reports.extend(ret)
+        try:
+            pool = Pool()
+            for ret in tqdm(pool.imap_unordered(run_single, self.paths), total=len(self.paths), desc="Running slither"):
+                self.bug_reports.extend(ret)
+        except Exception as e:
+            loguru.logger.error(f"执行Slither多进程任务失败，请检查错误信息: {e}")
 
     def report_to_csv(self):
         res = [CsvReport(r).__dict__ for r in self.bug_reports]

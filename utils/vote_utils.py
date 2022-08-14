@@ -25,53 +25,41 @@ class BugCounter:
 
 
 class Voter:
-    def __init__(self, slr_csv, myr_csv, cfr_csv, res_dir):
-        self.slr_csv = slr_csv
-        self.myr_csv = myr_csv
-        self.cfr_csv = cfr_csv
+    def __init__(self, res_dir):
         self.res_dir = res_dir
-        self.run()
+        self.bug_counters = set()
+        self.voter = {}
+
+    def put_voter_csv(self, csv_path: str, voter_name: str):
+        if not os.path.exists(csv_path):
+            loguru.logger.error("输出的投票源的csv文件不存在")
+        else:
+            self.voter[voter_name] = csv_path
+            loguru.logger.info(f"注册投票源{voter_name}成功")
 
     def run(self):
-        slr_df = pd.read_csv(self.slr_csv)
-        myr_df = pd.read_csv(self.myr_csv)
-        cfr_df = pd.read_csv(self.cfr_csv)
-        bug_counters = set()
-        for index, row in slr_df.iterrows():
-            is_contain = False
-            for bug_counter in bug_counters:
-                if bug_counter.path == row['path'] and bug_counter.bug_line == row["bug_line"] and bug_counter.bug_type == row["bug_type"] and bug_counter.contract == row["contract_name"] and bug_counter.function == row["function_name"]:
-                    bug_counter.vote(Tool("slither"))
-                    is_contain = True
-                    break
-            if not is_contain:
-                bug_counter = BugCounter(row['path'], row["bug_line"], row["bug_type"], row["contract_name"], row["function_name"])
-                bug_counter.vote(Tool("slither"))
-                bug_counters.add(bug_counter)
-        for index, row in myr_df.iterrows():
-            is_contain = False
-            for bug_counter in bug_counters:
-                if bug_counter.path == row['path'] and bug_counter.bug_line == row["bug_line"] and bug_counter.bug_type == row["bug_type"] and bug_counter.contract == row["contract_name"] and bug_counter.function == row["function_name"]:
-                    bug_counter.vote(Tool("mythril"))
-                    is_contain = True
-                    break
-            if not is_contain:
-                bug_counter = BugCounter(row['path'], row["bug_line"], row["bug_type"], row["contract_name"], row["function_name"])
-                bug_counter.vote(Tool("mythril"))
-                bug_counters.add(bug_counter)
-        for index, row in cfr_df.iterrows():
-            is_contain = False
-            for bug_counter in bug_counters:
-                if bug_counter.path == row['path'] and bug_counter.bug_line == row["bug_line"] and bug_counter.bug_type == row["bug_type"] and bug_counter.contract == row["contract_name"] and bug_counter.function == row["function_name"]:
-                    bug_counter.vote(Tool("confuzzius"))
-                    is_contain = True
-                    break
-            if not is_contain:
-                bug_counter = BugCounter(row['path'], row["bug_line"], row["bug_type"], row["contract_name"], row["function_name"])
-                bug_counter.vote(Tool("confuzzius"))
-                bug_counters.add(bug_counter)
-        for bug_counter in bug_counters.copy():
-            if len(bug_counter.voter) <= 1:
-                bug_counters.remove(bug_counter)
-        res_df = pd.DataFrame([bug_counter.__dict__ for bug_counter in bug_counters])
+        for voter_name, csv_path in self.voter.items():
+            df = pd.read_csv(csv_path)
+            self.extract_bug_info_into_bug_counters(df, voter_name)
+        for bug_counter in self.bug_counters.copy():
+            if len(bug_counter.voter) <= (len(self.voter) / 2):
+                self.bug_counters.remove(bug_counter)
+        res_df = pd.DataFrame([bug_counter.__dict__ for bug_counter in self.bug_counters])
         res_df.to_csv(os.path.join(self.res_dir, 'res.csv'), index=False)
+
+    def extract_bug_info_into_bug_counters(self, df, voter_name):
+        for index, row in df.iterrows():
+            is_contain = False
+            for bug_counter in self.bug_counters:
+                if bug_counter.path == row['path'] \
+                        and bug_counter.bug_line == row["bug_line"] \
+                        and bug_counter.bug_type == row["bug_type"] \
+                        and bug_counter.contract == row["contract_name"] \
+                        and bug_counter.function == row["function_name"]:
+                    bug_counter.vote(Tool(voter_name))  # 投票
+                    is_contain = True
+                    break
+            if not is_contain:
+                bug_counter = BugCounter(row['path'], row["bug_line"], row["bug_type"], row["contract_name"], row["function_name"])
+                bug_counter.vote(Tool(voter_name))
+                self.bug_counters.add(bug_counter)

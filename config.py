@@ -21,7 +21,7 @@ def convert_to_enum(name):
         return BugTypeEnum.ENV_DEPENDENCY
     elif name == "External Call To User-Supplied Address":
         return BugTypeEnum.REENTRANCY
-    elif name == "Integer Arithmetic Bugs":
+    elif name == "Integer Arithmetic Bugs" or name == "Integer Overflow":
         return BugTypeEnum.INTEGER_ARITHMETIC
     elif name == "unchecked-transfer" or name == "low-level-calls" or name == "Unchecked Return Value":
         return BugTypeEnum.UNCHECKED_CALL

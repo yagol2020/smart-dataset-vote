@@ -43,7 +43,7 @@ def extract_sols(source_path, sample):
             sols.append(path[1])
         else:
             try:
-                shutil.move(path[1], error_sol_path)
+                shutil.move(path[1], error_sol_path)  # 移动到error_sol文件夹中
                 loguru.logger.warning(f"{path[1]} is not compiled, moved to {error_sol_path}")
             except Exception as e:
                 loguru.logger.error(f"{path[1]} is not compiled, when move into error_dir, error happen: {e}")
@@ -55,8 +55,10 @@ def extract_sols(source_path, sample):
 def compile_sol(sol_path):
     try:
         Slither(sol_path)
+        open(sol_path, 'r').read()
     except Exception as e:
-        loguru.logger.error(f"{sol_path} is not compiled, {e}")
+        exception_info_str = str(e).split("\n")[0]
+        loguru.logger.error(f"{sol_path} is not compiled: {exception_info_str}")
         return False, sol_path
     return True, sol_path
 

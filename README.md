@@ -12,6 +12,9 @@
 
 ```shell
 git clone https://github.com/yagol2020/smart-dataset-vote.git --recursive
+conda env create -f environment.yml
+pip install -r requirements.txt
+
 ```
 
 #### 安装Slither
