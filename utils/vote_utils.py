@@ -19,6 +19,7 @@ class BugCounter:
     def vote(self, voter):
         if isinstance(voter, Tool):
             self.voter.append(voter.name)
+            self.voter = list(set(self.voter))  # 去重
         else:
             loguru.logger.warning("投票人不是Tool类型")
 

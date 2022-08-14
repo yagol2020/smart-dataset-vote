@@ -1,3 +1,4 @@
+import hashlib
 import os
 import random
 import shutil
@@ -19,19 +20,33 @@ def extract_sols(source_path, sample):
     paths = []
     for root, dirs, files in os.walk(source_path):
         for file in files:
-            if file.endswith(".sol") and "error_sol" not in root:
+            if file.endswith(".sol") and "error_sol" not in root:  # 只处理.sol文件，并且不在error_sol文件夹中
                 paths.append(os.path.join(root, file))
     random.shuffle(paths)
     if sample:
         if sample > len(paths):
             sample = len(paths)
         paths = random.sample(paths, sample)
-    for path in tqdm(pool.imap_unordered(compile_sol, paths), total=len(paths), desc="Compiling sols"):
+    # md5 remove duplicate
+    md5_set = set()
+    paths_distinct = []
+    for path in tqdm(paths, desc="remove duplicate"):
+        md5 = hashlib.md5(open(path, 'rb').read()).hexdigest()
+        if md5 in md5_set:
+            loguru.logger.debug("remove duplicate: {}".format(path))
+            continue
+        md5_set.add(md5)
+        paths_distinct.append(path)
+
+    for path in tqdm(pool.imap_unordered(compile_sol, paths_distinct), total=len(paths_distinct), desc="Compiling sols"):
         if path[0]:
             sols.append(path[1])
         else:
-            shutil.move(path[1], error_sol_path)
-            loguru.logger.warning(f"{path[1]} is not compiled, moved to {error_sol_path}")
+            try:
+                shutil.move(path[1], error_sol_path)
+                loguru.logger.warning(f"{path[1]} is not compiled, moved to {error_sol_path}")
+            except Exception as e:
+                loguru.logger.error(f"{path[1]} is not compiled, when move into error_dir, error happen: {e}")
     pool.close()
     pool.join()
     return sols
@@ -39,7 +54,7 @@ def extract_sols(source_path, sample):
 
 def compile_sol(sol_path):
     try:
-        CryticCompile(sol_path)
+        Slither(sol_path)
     except Exception as e:
         loguru.logger.error(f"{sol_path} is not compiled, {e}")
         return False, sol_path

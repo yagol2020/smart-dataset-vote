@@ -8,7 +8,13 @@
 
 ### USAGE
 
-安装Slither
+#### 克隆项目
+
+```shell
+git clone https://github.com/yagol2020/smart-dataset-vote.git --recursive
+```
+
+#### 安装Slither
 
 ```shell
 cd slither
@@ -16,7 +22,7 @@ python setup.py install
 
 ```
 
-安装Mythril
+#### 安装Mythril
 
 ```shell
 cd mythril
@@ -29,7 +35,7 @@ solc-select install 0.4.25
 solc-select use 0.4.25
 ```
 
-安装ConFuzzius
+#### 安装ConFuzzius
 
 ```shell
 cd ConFuzzius/fuzzer
@@ -38,3 +44,5 @@ pip install -r requirements.txt
 ```
 
 修改`ConFuzzius/fuzzer/utils/settings.py`文件中的`LOGGING_LEVEL = logging.ERROR`，避免日志输出过多
+
+#### 安装Oyente[**暂不支持**]
